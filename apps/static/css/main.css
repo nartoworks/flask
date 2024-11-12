@@ -1,0 +1,58 @@
+body {
+    background-color: white;
+    display: grid;
+    margin: 0;
+}
+
+.container_main {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+.sidebar_main {
+    height: 100%; /* Full-height: remove this if you want "auto" height */
+    width: 250px; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color:beige;
+    overflow-x: hidden; /* Disable horizontal scroll */
+  }
+
+.tabel{
+    padding: 8px;
+}
+
+#responsejson {
+    width: 240px;
+    height: 40%;
+    resize: none;
+    font-size: small;
+    font-family: Times;
+    color: blue;
+}
+
+#tabelAtribut{
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 5px;
+}
+
+th {
+    width: 40%;
+}
+
+th,td{
+    border: 1px solid black;
+    text-align: left;
+    padding: 5px;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+h1 {
+    text-align: center;
+}

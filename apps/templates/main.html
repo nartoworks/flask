@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}MAPS{% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link rel='stylesheet' href='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css'/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" >
+<link rel="stylesheet" href="https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@watergis/maplibre-gl-terradraw@0.1.1/dist/maplibre-gl-terradraw.css"/>
+<style>
+	#map { height: 100%; width: auto; margin-left: 250px;}
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container_main">
+	<div class="sidebar_main">
+		<textarea id="responsejson" readonly></textarea>
+		<div class="tabel">
+			<h1>Atribut</h1>
+			<form id="formAtribut">
+				{% for col in nama_col %}
+					<div class="row mb-3" style="margin-left: 2px; margin-right: 2px;">
+						<label style="width: 40%; word-wrap: break-word; padding-right: 2px;">{{col}}</label>
+						<textarea id="data_{{col}}" name="data_{{col}}" form="formAtribut" style="width: 60%; word-wrap: break-word; word-break: break-all; resize: none;"></textarea>
+					</div>
+				{% endfor %}
+				<button type="submit" name="submit">Save</button>
+				<button type="button">Cancel</button>
+			</form>
+		</div>
+	</div>
+	<div id="map"></div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+
+{% block javascripts %}
+<script src='https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js'></script>
+<script src="https://www.unpkg.com/@mapbox/mapbox-gl-draw@1.4.3/dist/mapbox-gl-draw.js"></script>
+<script src="https://unpkg.com/terra-draw@1.0.0-beta.0/dist/terra-draw.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@watergis/maplibre-gl-terradraw@0.4.1/dist/maplibre-gl-terradraw.umd.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+	MapboxDraw.constants.classes.CONTROL_BASE  = 'maplibregl-ctrl';
+    MapboxDraw.constants.classes.CONTROL_PREFIX = 'maplibregl-ctrl-';
+    MapboxDraw.constants.classes.CONTROL_GROUP = 'maplibregl-ctrl-group';
+	const map = new maplibregl.Map({
+			container: 'map', // container id
+			style: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/arcgis_hybrid.json',
+			center: [106.82720305408867, -6.175217064157884], // starting position [lng, lat]  
+			zoom: 15, // starting zoom
+			maplibreLogo: true
+	});
+
+	const draw = new MapboxDraw({
+        displayControlsDefault: true,
+        controls: {
+            polygon: true,
+            trash: true
+        }
+    });
+
+	var data_api = {{ data_api | tojson}};
+	map.on('load', function(){
+
+
+		map.addControl(draw, 'top-left');
+		map.on('draw.selectionchange', selectData);
+		map.on('draw.create', createData);
+
+		draw.set(data_api);
+
+		function createData(e){
+			var convertedData = JSON.stringify(e.features[0], undefined, 2);
+			document.getElementById('responsejson').innerHTML = convertedData;
+			document.getElementById('data_geom').innerHTML = e.features[0].geometry.coordinates[0];
+			console.log(e.features[0].geometry.coordinates[0]);
+			var dataCreated = e.features[0]
+			console.log(dataCreated)
+			$('#formAtribut').on('submit',function(e){
+				e.preventDefault();
+				$.ajax({
+					data : {
+						'data': dataCreated
+					},
+					type : 'POST',
+					url : "http://127.0.0.1:5000/main/create",
+					dataType: 'json',
+					success: function(response){
+							console.log(response);
+						},
+					error: function(error){
+							console.log(error);
+						}
+				});
+
+			});
+			
+		}
+
+		function selectData(e){
+			// const data = draw.getAll();
+			const idData = draw.getSelectedIds();
+			var detailData = draw.get(idData);
+			
+			if (detailData){
+				Object.entries(detailData.properties).forEach(([k,v]) => {
+					idCol = 'data_'+k
+					document.getElementById(idCol).innerHTML = v;
+				});
+			} else {
+				'{% for col in nama_col %}'
+				document.getElementById('data_{{col}}').innerHTML = '';
+				'{% endfor %}'
+			}
+
+	
+			// if (data.features.length > 0) {
+			// 	var convertedData = JSON.stringify(data, undefined, 2);
+			// 	document.getElementById('responsejson').innerHTML = convertedData;
+			// } else {
+			// 	document.getElementById('responsejson').innerHTML = '';
+			// }
+			
+		}
+
+		
+	});
+	
+</script>
+{% endblock javascripts %}
