@@ -11,22 +11,22 @@ def home():
     list_feature=[]
     a=1
     for plgn in data_map.json():
-        attr={}
+        atribut={}
         list_coor=[]
         for k in list(plgn.keys()):
-            attr[k]=plgn[k]
-        for coor in attr['geom'][10:-2].replace(', ',',').split(','):
+            atribut[k]=plgn[k]
+        for coor in atribut['geom'][10:-2].replace(', ',',').split(','):
             lng = float(coor.split(' ')[0])
             lat = float(coor.split(' ')[1])
             list_coor.append(list((lng,lat)))
         # ftr = dict({'id':'poly'+str(a),'type': 'Feature','properties':attr,
         #             'geometry':{'type':'Polygon','coordinates':[list_coor]}})
-        ftr = dict({'id':attr['id'],'type': 'Feature','properties':attr,
+        ftr = dict({'id':atribut['id'],'type': 'Feature','properties':atribut,
                     'geometry':{'type':'Polygon','coordinates':[list_coor]}})
         list_feature.append(ftr)
         a=a+1
     feat = dict({'type':'FeatureCollection','features':list_feature})
-    nama_col = list(attr.keys())
+    nama_col = list(atribut.keys())
     session['nama_col'] = nama_col
     return render_template('main.html', data_api=feat, nama_col=nama_col)
 
