@@ -7,28 +7,34 @@ main = Blueprint('main',__name__,static_folder='static', template_folder='templa
 
 @main.route('/main', methods =['GET', 'POST'])
 def home():
-    data_map = requests.get('http://127.0.0.1:8000/map/all')
+    data_map = requests.get('http://103.181.183.63/api/map/all')
     list_feature=[]
     a=1
-    for plgn in data_map.json():
-        atribut={}
-        list_coor=[]
-        for k in list(plgn.keys()):
-            atribut[k]=plgn[k]
-        for coor in atribut['geom'][10:-2].replace(', ',',').split(','):
-            lng = float(coor.split(' ')[0])
-            lat = float(coor.split(' ')[1])
-            list_coor.append(list((lng,lat)))
-        # ftr = dict({'id':'poly'+str(a),'type': 'Feature','properties':attr,
-        #             'geometry':{'type':'Polygon','coordinates':[list_coor]}})
-        ftr = dict({'id':atribut['id'],'type': 'Feature','properties':atribut,
-                    'geometry':{'type':'Polygon','coordinates':[list_coor]}})
-        list_feature.append(ftr)
-        a=a+1
-    feat = dict({'type':'FeatureCollection','features':list_feature})
-    nama_col = list(atribut.keys())
-    session['nama_col'] = nama_col
-    return render_template('main.html', data_api=feat, nama_col=nama_col)
+    if data_map.json() != []:
+        for plgn in data_map.json():
+            atribut={}
+            list_coor=[]
+            for k in list(plgn.keys()):
+                atribut[k]=plgn[k]
+            for coor in atribut['geom'][10:-2].replace(', ',',').split(','):
+                lng = float(coor.split(' ')[0])
+                lat = float(coor.split(' ')[1])
+                list_coor.append(list((lng,lat)))
+            # ftr = dict({'id':'poly'+str(a),'type': 'Feature','properties':attr,
+            #             'geometry':{'type':'Polygon','coordinates':[list_coor]}})
+            ftr = dict({'id':atribut['id'],'type': 'Feature','properties':atribut,
+                        'geometry':{'type':'Polygon','coordinates':[list_coor]}})
+            list_feature.append(ftr)
+            a=a+1
+        feat = dict({'type':'FeatureCollection','features':list_feature})
+        nama_col = list(atribut.keys())
+        session['nama_col'] = nama_col
+        return render_template('main.html', data_api=feat, nama_col=nama_col)
+    else:
+        nama_col=[]
+        feat={}
+        return render_template('main.html', data_api = feat, nama_col=nama_col)
+    
 
 @main.route('/main/create', methods =['GET', 'POST'])
 def create_poli():
